@@ -44,8 +44,10 @@ class ProjectHooks:
     def register_pipelines(self) -> Dict[str, Pipeline]:
         train_data_pipeline = de.create_train_data_pipeline()
         cross_valid_pipeline = ds.create_cross_validation_pipeline()
+        hy_para_tuning_pipeline = ds.create_hy_para_tuning_pipeline()
         return {
-            "__default__": train_data_pipeline+cross_valid_pipeline
+            "__default__": train_data_pipeline+cross_valid_pipeline,
+            "hy_para_tuning": train_data_pipeline + hy_para_tuning_pipeline
         }
 
     @hook_impl
