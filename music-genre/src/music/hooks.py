@@ -43,11 +43,22 @@ class ProjectHooks:
     @hook_impl
     def register_pipelines(self) -> Dict[str, Pipeline]:
         train_data_pipeline = de.create_train_data_pipeline()
+        test_data_pipeline = de.create_test_data_pipeline()
         cross_valid_pipeline = ds.create_cross_validation_pipeline()
         hy_para_tuning_pipeline = ds.create_hy_para_tuning_pipeline()
+        eval_pipeline = ds.create_eval_pipeline()
+        train_pipeline = ds.create_real_train_pipeline()
         return {
-            "__default__": train_data_pipeline+cross_valid_pipeline,
-            "hy_para_tuning": train_data_pipeline + hy_para_tuning_pipeline
+            "__default__": train_data_pipeline
+            + test_data_pipeline
+            + train_pipeline
+            + eval_pipeline,
+            "cross_valid": train_data_pipeline + cross_valid_pipeline,
+            "hy_para_tuning": train_data_pipeline + hy_para_tuning_pipeline,
+            "data_engeering": train_data_pipeline,
+            "preprocess_test_data": test_data_pipeline,
+            "train": train_pipeline,
+            "eval": eval_pipeline,
         }
 
     @hook_impl

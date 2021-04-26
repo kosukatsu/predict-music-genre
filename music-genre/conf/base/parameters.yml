@@ -1,16 +1,77 @@
-train_data_path: "./data/01_raw/train.csv"
-test_data_path: "./data/01_raw/test.csv"
+train_raw_data_path: "./data/01_raw/train.csv"
+test_raw_data_path: "./data/01_raw/test.csv"
 
-max_duration_ms: 6000000
-max_loundness_dB: 40
+train_preprocess_params:
+  max_duration_ms: 6000000
+  max_loundness_dB: 40
+
+  process_missing_list: ["drop", "mean"]
+  process_missing: "drop"
+
+  process_region_list: ["drop", "replace-aggregate"]
+  process_region: "replace-aggregate"
+  regions_as_unknown:
+    ["region_M", "region_A", "region_J", "region_Q", "region_N"]
+
+test_preprocess_params:
+  max_duration_ms: 6000000
+  max_loundness_dB: 40
+
+  process_missing_list: ["drop", "mean"]
+  process_missing: "mean"
+
+  process_region_list: ["drop", "replace-aggregate"]
+  process_region: "replace-aggregate"
+  regions_as_unknown:
+    ["region_M", "region_A", "region_J", "region_Q", "region_N"]
+  regions_white_list:
+    [
+      "region_H",
+      "region_I",
+      "region_E",
+      "region_C",
+      "unknown",
+      "region_N",
+      "region_O",
+      "region_B",
+      "region_K",
+      "region_L",
+      "region_P",
+      "region_R",
+      "region_T",
+      "region_D",
+      "region_F",
+      "region_J",
+      "region_S",
+      "region_G",
+      "region_Q",
+      "region_A",
+      "region_M",
+    ]
+
+train_data_path: "./data/04_feature/train_data.pkl"
+test_data_path: "./data/04_feature/test_data.pkl"
+
+model_path: "./data/06_models/lgbm_model.txt"
 
 cross_validation_k: 10
+
+train_rate: 0.8
 
 seed: 328
 
 lgbm_params:
   task: "train"
-  boosting_type: "gbdt"
+  boosting_type: "dart"
+  objective: "multiclass"
+  num_class: 11
+  verbose: 2
+  num_iterations: 100
+  verbose_eval: 5
+
+real_lgbm_params:
+  task: "train"
+  boosting_type: "dart"
   objective: "multiclass"
   num_class: 11
   verbose: 2
@@ -18,9 +79,17 @@ lgbm_params:
   verbose_eval: 5
 
 lgbm_hyper_parameter_tuning:
-  use_params: ["num_leaves", "max_bin"]
+  use_params:
+    [
+      "num_leaves",
+      "max_bin",
+      "max_depth",
+      "min_data_in_leaf",
+      "lambda_l1",
+      "lambda_l2",
+    ]
 
-  n_trials: 10
+  n_trials: 100
 
   num_leaves:
     type: "int"

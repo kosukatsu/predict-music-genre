@@ -1,9 +1,14 @@
+import os, sys
+
+sys.path.append("./src/music/pipelines")
+
 import logging
 
 import lightgbm as lgb
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score
 import numpy as np
+import pandas as pd
 import optuna
 import optuna.integration.lightgbm as opt_lgb
 
@@ -20,11 +25,7 @@ def cross_validation_model(model_params, train_x, train_y, k, seed):
         train_data = lgb.Dataset(train_x.iloc[train_idx], label=train_y[train_idx])
         valid_data = lgb.Dataset(train_x.iloc[val_idx], label=train_y[val_idx])
 
-        lgbm = lgb.train(
-            model_params,
-            train_data,
-            valid_sets=valid_data,
-        )
+        lgbm = lgb.train(model_params, train_data, valid_sets=valid_data,)
 
         preds = lgbm.predict(train_x.iloc[val_idx])
         accuracy = accuracy_score(preds.argmax(axis=1), train_y[val_idx])
@@ -55,8 +56,12 @@ def tuning_objective(trial, model_params, train_x, train_y, k, seed, tuning_para
 
 def hyper_parameter_tuning(model_params, train_x, train_y, k, seed, tuning_params):
     study = optuna.create_study(direction="maximize")
-    study.optimize(lambda trial: tuning_objective(trial, model_params,
-                   train_x, train_y, k, seed, tuning_params), tuning_params["n_trials"],)
+    study.optimize(
+        lambda trial: tuning_objective(
+            trial, model_params, train_x, train_y, k, seed, tuning_params
+        ),
+        tuning_params["n_trials"],
+    )
 
     trial = study.best_trial
 
@@ -64,3 +69,34 @@ def hyper_parameter_tuning(model_params, train_x, train_y, k, seed, tuning_param
     print("Best params:")
     for key, value in trial.params.items():
         print("\t{}:\t{}".format(key, value))
+
+    return trial
+
+
+def train(model_params, train_x, train_y, seed, train_rate, save_model_path):
+    logger = logging.getLogger(__name__)
+
+    model_params["seed"] = seed
+
+    data_len = len(train_x)
+    train_idx = np.ones(data_len, dtype=bool)
+    train_idx[int(data_len * train_rate) :] = False
+    np.random.seed(seed)
+    np.random.shuffle(train_idx)
+    val_idx = train_idx == False
+
+    train_data = lgb.Dataset(train_x[train_idx], label=train_y[train_idx])
+    valid_data = lgb.Dataset(train_x[val_idx], label=train_y[val_idx])
+
+    lgbm = lgb.train(model_params, train_data, valid_sets=valid_data)
+
+    preds = lgbm.predict(train_x.iloc[val_idx])
+    accuracy = accuracy_score(preds.argmax(axis=1), train_y[val_idx])
+    logger.info("accuracy:%f", accuracy)
+
+    return lgbm
+
+
+def predict(test_data, lgbm):
+    preds = lgbm.predict(test_data)
+    return pd.DataFrame([np.arange(4046, 4046 * 2), preds.argmax(axis=1)]).T
