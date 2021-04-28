@@ -35,3 +35,8 @@ lgbm_output:
   save_args:
     header: False
     index: False
+
+lgbm_model_hypara_tuning:
+  type: pickle.PickleDataSet
+  filepath: data/06_models/lgbm_model_hypara_tuning.txt
+  versioned: True

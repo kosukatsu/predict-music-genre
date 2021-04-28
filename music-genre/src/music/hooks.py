@@ -48,6 +48,7 @@ class ProjectHooks:
         hy_para_tuning_pipeline = ds.create_hy_para_tuning_pipeline()
         eval_pipeline = ds.create_eval_pipeline()
         train_pipeline = ds.create_real_train_pipeline()
+        select_feature_pipeline = ds.create_select_feature_pipeline()
         return {
             "__default__": train_data_pipeline
             + test_data_pipeline
@@ -59,6 +60,7 @@ class ProjectHooks:
             "preprocess_test_data": test_data_pipeline,
             "train": train_pipeline,
             "eval": eval_pipeline,
+            "select": select_feature_pipeline,
         }
 
     @hook_impl

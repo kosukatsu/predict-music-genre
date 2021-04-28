@@ -78,6 +78,13 @@ real_lgbm_params:
   num_iterations: 100
   verbose_eval: 5
 
+  num_leaves: 223
+  max_bin: 208
+  max_depth: 9
+  min_data_in_leaf: 71
+  lambda_l1: 3.73e-8
+  lambda_l2: 1.57e-3
+
 lgbm_hyper_parameter_tuning:
   use_params:
     [
@@ -158,3 +165,4 @@ lgbm_hyper_parameter_tuning:
     lower: 1.0e-8
     upper: 10.0
     defalut: 0.0
+    log: True

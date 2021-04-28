@@ -6,6 +6,7 @@ import logging
 
 import lightgbm as lgb
 from sklearn.model_selection import KFold
+from sklearn.feature_selection import SelectFromModel
 from sklearn.metrics import accuracy_score
 import numpy as np
 import pandas as pd
@@ -49,9 +50,11 @@ def tuning_objective(trial, model_params, train_x, train_y, k, seed, tuning_para
         if type_name == "int":
             model_params[params] = trial.suggest_int(params, lower, upper)
         elif type_name == "float":
-            model_params[params] = trial.suggest_int(params, lower, upper, log=use_log)
+            model_params[params] = trial.suggest_float(
+                params, lower, upper, log=use_log
+            )
 
-        return cross_validation_model(model_params, train_x, train_y, k, seed)
+    return cross_validation_model(model_params, train_x, train_y, k, seed)
 
 
 def hyper_parameter_tuning(model_params, train_x, train_y, k, seed, tuning_params):
@@ -100,3 +103,13 @@ def train(model_params, train_x, train_y, seed, train_rate, save_model_path):
 def predict(test_data, lgbm):
     preds = lgbm.predict(test_data)
     return pd.DataFrame([np.arange(4046, 4046 * 2), preds.argmax(axis=1)]).T
+
+
+def select_feature(lgbm, params, train_x, train_y):
+    selector = SelectFromModel(lgb.LGBMClassifier(**params), threshold="median")
+    selector.fit(train_x, train_y)
+    print(train_x.columns)
+    print(selector.get_support())
+    print(train_x.columns[selector.get_support()])
+    print(selector.estimator_.feature_importances_)
+    return dict(zip(train_x.columns, selector.estimator_.feature_importances_))
