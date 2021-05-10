@@ -49,6 +49,7 @@ class ProjectHooks:
         eval_pipeline = ds.create_eval_pipeline()
         train_pipeline = ds.create_real_train_pipeline()
         select_feature_pipeline = ds.create_select_feature_pipeline()
+        pseudo_pipeline = ds.create_pseudo_label_pipeline()
         return {
             "__default__": train_data_pipeline
             + test_data_pipeline
@@ -61,6 +62,7 @@ class ProjectHooks:
             "train": train_pipeline,
             "eval": eval_pipeline,
             "select": select_feature_pipeline,
+            "labeling_pseudo": pseudo_pipeline,
         }
 
     @hook_impl

@@ -3,3 +3,4 @@ from .pipeline import create_hy_para_tuning_pipeline
 from .pipeline import create_eval_pipeline
 from .pipeline import create_real_train_pipeline
 from .pipeline import create_select_feature_pipeline
+from .pipeline import create_pseudo_label_pipeline

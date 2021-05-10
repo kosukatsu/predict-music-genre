@@ -1,0 +1,52 @@
+default_preprocess_params:
+  max_duration_ms: 6000000
+  max_loundness_dB: 40
+
+  process_missing_list: ["drop", "mean"]
+  process_missing: "drop"
+
+  process_region_list: ["drop", "replace-aggregate"]
+  process_region: "replace-aggregate"
+  regions_as_unknown:
+    ["region_M", "region_A", "region_J", "region_Q", "region_N"]
+
+  feature_product:
+    [
+      "acousticness",
+      "positiveness",
+      "danceability",
+      "energy",
+      "liveness",
+      "speechiness",
+      "instrumentalness",
+    ]
+
+train_preprocess_params:
+  "dummy": "dummy"
+
+test_preprocess_params:
+  regions_white_list:
+    [
+      "region_H",
+      "region_I",
+      "region_E",
+      "region_C",
+      "unknown",
+      "region_N",
+      "region_O",
+      "region_B",
+      "region_K",
+      "region_L",
+      "region_P",
+      "region_R",
+      "region_T",
+      "region_D",
+      "region_F",
+      "region_J",
+      "region_S",
+      "region_G",
+      "region_Q",
+      "region_A",
+      "region_M",
+    ]
+

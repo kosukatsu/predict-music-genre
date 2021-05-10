@@ -61,7 +61,8 @@ def process_region(data, preprocess_params):
     return data
 
 
-def process_missing(data, process_name):
+def process_missing(data,params):
+    process_name=params["process_missing"]
     if process_name == "drop":
         data.dropna(how="any")
     elif process_name == "mean":
@@ -69,7 +70,8 @@ def process_missing(data, process_name):
     return data
 
 
-def normalize_duration(data, peak_value):
+def normalize_duration(data, params):
+    peak_value=params["max_duration_ms"]
     duration = data["duration_ms"].to_numpy()
     duration[duration > peak_value] = peak_value
     duration = duration.astype(float) / peak_value
@@ -78,7 +80,8 @@ def normalize_duration(data, peak_value):
     return data
 
 
-def normalize_loundness(data, peak_value):
+def normalize_loundness(data, params):
+    peak_value=params["max_loundness_dB"]
     loundness = data["loudness"].to_numpy()
     loundness = -loundness
     loundness[loundness > peak_value] = peak_value
@@ -90,3 +93,14 @@ def normalize_loundness(data, peak_value):
 
 def sort_index(data):
     return data.sort_index()
+
+
+def product_feature(data,params):
+    features=params["feature_product"]
+    features_num=len(features)
+    for i in range(features_num):
+        for j in np.arange(start=i+1,stop=features_num):
+            column_name="sqrt_{}_x_{}".format(features[i],features[j])
+            data[column_name]=data[features[i]]*data[features[j]]
+            data[column_name].apply(np.sqrt)
+    return data

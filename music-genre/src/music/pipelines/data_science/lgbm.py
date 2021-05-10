@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score
 import numpy as np
 import pandas as pd
 import optuna
-import optuna.integration.lightgbm as opt_lgb
+from optuna.integration.lightgbm import LightGBMTunerCV as tuner
 
 
 def cross_validation_model(model_params, train_x, train_y, k, seed):
@@ -38,45 +38,54 @@ def cross_validation_model(model_params, train_x, train_y, k, seed):
     return accuracy
 
 
-def tuning_objective(trial, model_params, train_x, train_y, k, seed, tuning_params):
-    for params in tuning_params["use_params"]:
-        if "log" in tuning_params[params]:
-            use_log = tuning_params[params]["log"]
-        else:
-            use_log = False
-        type_name = tuning_params[params]["type"]
-        lower = tuning_params[params]["lower"]
-        upper = tuning_params[params]["upper"]
-        if type_name == "int":
-            model_params[params] = trial.suggest_int(params, lower, upper)
-        elif type_name == "float":
-            model_params[params] = trial.suggest_float(
-                params, lower, upper, log=use_log
-            )
+# def tuning_objective(trial, model_params, train_x, train_y, k, seed, tuning_params):
+#     for params in tuning_params["use_params"]:
+#         if "log" in tuning_params[params]:
+#             use_log = tuning_params[params]["log"]
+#         else:
+#             use_log = False
+#         type_name = tuning_params[params]["type"]
+#         lower = tuning_params[params]["lower"]
+#         upper = tuning_params[params]["upper"]
+#         if type_name == "int":
+#             model_params[params] = trial.suggest_int(params, lower, upper)
+#         elif type_name == "float":
+#             model_params[params] = trial.suggest_float(
+#                 params, lower, upper, log=use_log
+#             )
 
-    return cross_validation_model(model_params, train_x, train_y, k, seed)
+#     return cross_validation_model(model_params, train_x, train_y, k, seed)
 
+
+# def hyper_parameter_tuning(model_params, train_x, train_y, k, seed, tuning_params):
+#     study = optuna.create_study(direction="maximize")
+#     study.optimize(
+#         lambda trial: tuning_objective(
+#             trial, model_params, train_x, train_y, k, seed, tuning_params
+#         ),
+#         tuning_params["n_trials"],
+#     )
+
+#     trial = study.best_trial
+
+#     print("Best accuracy:{}", format(trial.value))
+#     print("Best params:")
+#     for key, value in trial.params.items():
+#         print("\t{}:\t{}".format(key, value))
+
+#     return trial
 
 def hyper_parameter_tuning(model_params, train_x, train_y, k, seed, tuning_params):
-    study = optuna.create_study(direction="maximize")
-    study.optimize(
-        lambda trial: tuning_objective(
-            trial, model_params, train_x, train_y, k, seed, tuning_params
-        ),
-        tuning_params["n_trials"],
-    )
-
-    trial = study.best_trial
-
-    print("Best accuracy:{}", format(trial.value))
-    print("Best params:")
-    for key, value in trial.params.items():
-        print("\t{}:\t{}".format(key, value))
-
-    return trial
+    train_data = lgb.Dataset(train_x, label=train_y)
+    booster=tuner(model_params,train_data,nfold=k,seed=seed)
+    booster.run()
+    print(booster.best_score)
+    print(booster.best_params)
+    return booster
 
 
-def train(model_params, train_x, train_y, seed, train_rate, save_model_path):
+
+def train(model_params, train_x, train_y, seed, train_rate):
     logger = logging.getLogger(__name__)
 
     model_params["seed"] = seed
@@ -104,6 +113,17 @@ def predict(test_data, lgbm):
     preds = lgbm.predict(test_data)
     return pd.DataFrame([np.arange(4046, 4046 * 2), preds.argmax(axis=1)]).T
 
+def pseudo_label(test_data ,lgbm, th):
+    preds = lgbm.predict(test_data)
+    df=pd.DataFrame([np.arange(4046, 4046 * 2), preds.argmax(axis=1),preds.max(axis=1)]).T
+    df.columns=["index","predict","score"]
+    print(df.sort_values("score"))
+    df=df.sort_values("index")
+    df=df.loc[df["score"]>th]
+    print(df)
+    pseudo_data=test_data.loc[df["index"]]
+    pseudo_data["genre"]=df["predict"].to_numpy()
+    return pseudo_data
 
 def select_feature(lgbm, params, train_x, train_y):
     selector = SelectFromModel(lgb.LGBMClassifier(**params), threshold="median")
@@ -111,5 +131,11 @@ def select_feature(lgbm, params, train_x, train_y):
     print(train_x.columns)
     print(selector.get_support())
     print(train_x.columns[selector.get_support()])
+    print(train_x.columns[selector.get_support()==False])
     print(selector.estimator_.feature_importances_)
-    return dict(zip(train_x.columns, selector.estimator_.feature_importances_))
+    return {
+            "columns":train_x.columns,
+            "importances":selector.estimator_.feature_importances_,
+            "feature_selected":train_x.columns[selector.get_support()],
+            "feature_not_selected":train_x.columns[selector.get_support()==False],
+        }

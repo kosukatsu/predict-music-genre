@@ -1,0 +1,83 @@
+lgbm_hyper_parameter_tuning:
+  use_params:
+    [
+      "num_leaves",
+      "max_depth",
+      "min_data_in_leaf",
+      "lambda_l1",
+      "lambda_l2",
+      "feature_fraction",
+      "bagging_fraction",
+      "bagging_freq",
+    ]
+
+  n_trials: 1000
+
+  num_leaves:
+    type: "int"
+    lower: 2
+    upper: 256
+    default: 31
+
+  max_depth:
+    type: "int"
+    lower: 5
+    upper: 10
+    default: -1
+
+  min_data_in_leaf:
+    type: "int"
+    lower: 5
+    upper: 100
+    default: 20
+
+  max_bin:
+    type: "int"
+    lower: 8
+    upper: 512
+    defalut: 255
+
+  num_iterations:
+    type: "int"
+    lower: 64
+    upper: 256
+    default: 100
+
+  learning_rate:
+    type: "float"
+    lower: 1.0e-4
+    upper: 1.0
+    default: 0.1
+    log: True
+
+  feature_fraction:
+    type: "float"
+    lower: 0.4
+    upper: 1.0
+    default: 1.0
+
+  bagging_fraction:
+    type: "float"
+    lower: 0.4
+    upper: 1.0
+    default: 1.0
+
+  bagging_freq:
+    type: "int"
+    lower: 1
+    upper: 7
+    default: 0
+
+  lambda_l1:
+    type: "float"
+    lower: 1.0e-8
+    upper: 10.0
+    default: 0.0
+    log: True
+
+  lambda_l2:
+    type: "float"
+    lower: 1.0e-8
+    upper: 10.0
+    defalut: 0.0
+    log: True

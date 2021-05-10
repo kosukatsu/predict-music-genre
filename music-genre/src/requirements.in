@@ -13,3 +13,6 @@ pytest~=6.1.2
 wheel==0.32.2
 
 tensorboard
+pandas
+numpy 
+scikit-learn

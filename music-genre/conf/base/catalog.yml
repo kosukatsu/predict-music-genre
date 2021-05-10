@@ -40,3 +40,11 @@ lgbm_model_hypara_tuning:
   type: pickle.PickleDataSet
   filepath: data/06_models/lgbm_model_hypara_tuning.txt
   versioned: True
+
+feature_importance:
+  type: pickle.PickleDataSet
+  filepath: data/06_models/feature_importance.pkl
+
+pseudo_data:
+  type: pickle.PickleDataSet
+  filepath: data/05_model_input/pseudo_data.pkl

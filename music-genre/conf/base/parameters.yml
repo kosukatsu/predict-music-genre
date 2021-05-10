@@ -1,58 +1,35 @@
-train_raw_data_path: "./data/01_raw/train.csv"
-test_raw_data_path: "./data/01_raw/test.csv"
+drop_feature:
+  [
+    "lower_tempo",
+    "upper_tempo",
+    "tempo_range",
+    "z_score_per_reigon_upper_tempo",
 
-train_preprocess_params:
-  max_duration_ms: 6000000
-  max_loundness_dB: 40
-
-  process_missing_list: ["drop", "mean"]
-  process_missing: "drop"
-
-  process_region_list: ["drop", "replace-aggregate"]
-  process_region: "replace-aggregate"
-  regions_as_unknown:
-    ["region_M", "region_A", "region_J", "region_Q", "region_N"]
-
-test_preprocess_params:
-  max_duration_ms: 6000000
-  max_loundness_dB: 40
-
-  process_missing_list: ["drop", "mean"]
-  process_missing: "mean"
-
-  process_region_list: ["drop", "replace-aggregate"]
-  process_region: "replace-aggregate"
-  regions_as_unknown:
-    ["region_M", "region_A", "region_J", "region_Q", "region_N"]
-  regions_white_list:
-    [
-      "region_H",
-      "region_I",
-      "region_E",
-      "region_C",
-      "unknown",
-      "region_N",
-      "region_O",
-      "region_B",
-      "region_K",
-      "region_L",
-      "region_P",
-      "region_R",
-      "region_T",
-      "region_D",
-      "region_F",
-      "region_J",
-      "region_S",
-      "region_G",
-      "region_Q",
-      "region_A",
-      "region_M",
-    ]
-
-train_data_path: "./data/04_feature/train_data.pkl"
-test_data_path: "./data/04_feature/test_data.pkl"
-
-model_path: "./data/06_models/lgbm_model.txt"
+    'positiveness', 'liveness', 'speechiness',
+       'sqrt_acousticness_x_liveness', 'sqrt_positiveness_x_danceability',
+       'sqrt_positiveness_x_energy', 'sqrt_positiveness_x_liveness',
+       'sqrt_positiveness_x_speechiness',
+       'sqrt_positiveness_x_instrumentalness', 'sqrt_danceability_x_liveness',
+       'sqrt_danceability_x_instrumentalness', 'sqrt_liveness_x_speechiness',
+       'sqrt_liveness_x_instrumentalness',
+       'sqrt_speechiness_x_instrumentalness',
+       'z_score_per_reigon_acousticness', 'z_score_per_reigon_positiveness',
+       'z_score_per_reigon_liveness', 'z_score_per_reigon_speechiness',
+       'z_score_per_reigon_sqrt_acousticness_x_liveness',
+       'z_score_per_reigon_sqrt_positiveness_x_danceability',
+       'z_score_per_reigon_sqrt_positiveness_x_energy',
+       'z_score_per_reigon_sqrt_positiveness_x_liveness',
+       'z_score_per_reigon_sqrt_positiveness_x_speechiness',
+       'z_score_per_reigon_sqrt_positiveness_x_instrumentalness',
+       'z_score_per_reigon_sqrt_danceability_x_energy',
+       'z_score_per_reigon_sqrt_danceability_x_liveness',
+       'z_score_per_reigon_sqrt_danceability_x_speechiness',
+       'z_score_per_reigon_sqrt_danceability_x_instrumentalness',
+       'z_score_per_reigon_sqrt_energy_x_liveness',
+       'z_score_per_reigon_sqrt_energy_x_speechiness',
+       'z_score_per_reigon_sqrt_liveness_x_speechiness',
+       'z_score_per_reigon_sqrt_liveness_x_instrumentalness'
+  ]
 
 cross_validation_k: 10
 
@@ -60,109 +37,26 @@ train_rate: 0.8
 
 seed: 328
 
+default_lgbm_params:
+  task: "train"
+  boosting_type: "dart"
+  objective: "multiclass"
+  metric: "multi_logloss"
+  num_class: 11
+  verbose: 0
+  num_iterations: 100
+  verbose_eval: 5
+  device: cpu
+  num_threads: 6
+  max_bin: 32
+  max_depth: 10
+
 lgbm_params:
-  task: "train"
-  boosting_type: "dart"
-  objective: "multiclass"
-  num_class: 11
-  verbose: 2
-  num_iterations: 100
-  verbose_eval: 5
+  num_leaves: 31
+  min_data_in_leaf: 50
+  lambda_l1: 0.5045247115295503
+  lambda_l2: 1.3644528800808182e-06
+  feature_fraction: 0.9520000000000001
+  bagging_fraction: 0.8877260039410322
+  bagging_freq: 3
 
-real_lgbm_params:
-  task: "train"
-  boosting_type: "dart"
-  objective: "multiclass"
-  num_class: 11
-  verbose: 2
-  num_iterations: 100
-  verbose_eval: 5
-
-  num_leaves: 223
-  max_bin: 208
-  max_depth: 9
-  min_data_in_leaf: 71
-  lambda_l1: 3.73e-8
-  lambda_l2: 1.57e-3
-
-lgbm_hyper_parameter_tuning:
-  use_params:
-    [
-      "num_leaves",
-      "max_bin",
-      "max_depth",
-      "min_data_in_leaf",
-      "lambda_l1",
-      "lambda_l2",
-    ]
-
-  n_trials: 100
-
-  num_leaves:
-    type: "int"
-    lower: 2
-    upper: 256
-    default: 31
-
-  max_depth:
-    type: "int"
-    lower: 5
-    upper: 10
-    default: -1
-
-  min_data_in_leaf:
-    type: "int"
-    lower: 5
-    upper: 100
-    default: 20
-
-  max_bin:
-    type: "int"
-    lower: 128
-    upper: 512
-    defalut: 255
-
-  num_iterations:
-    type: "int"
-    lower: 64
-    upper: 256
-    default: 100
-
-  learning_rate:
-    type: "float"
-    lower: 1.0e-4
-    upper: 1.0
-    default: 0.1
-    log: True
-
-  feature_fraction:
-    type: "float"
-    lower: 0.4
-    upper: 1.0
-    default: 1.0
-
-  bagging_fraction:
-    type: "float"
-    lower: 0.4
-    upper: 1.0
-    default: 1.0
-
-  bagging_freq:
-    type: "int"
-    lower: 1
-    upper: 7
-    default: 0
-
-  lambda_l1:
-    type: "float"
-    lower: 1.0e-8
-    upper: 10.0
-    default: 0.0
-    log: True
-
-  lambda_l2:
-    type: "float"
-    lower: 1.0e-8
-    upper: 10.0
-    defalut: 0.0
-    log: True
